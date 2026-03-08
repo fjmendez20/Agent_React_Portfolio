@@ -6,9 +6,30 @@ from pydantic import BaseModel
 from src.react_agent.graph import builder
 from langchain_core.messages import HumanMessage
 from src.react_agent.context import Context
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from contextlib import asynccontextmanager
+from psycopg_pool import AsyncConnectionPool
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 load_dotenv()
+
+# 1. Obtenemos la URL de Supabase desde las variables de entorno
+DB_URI = os.getenv("DATABASE_URL")
+
+# 2. Creamos un pool de conexiones (esto es más profesional)
+connection_kwargs = {
+    "autocommit": True,
+    "prepare_threshold": 0,
+}
+
+@asynccontextmanager
+async def get_checkpointer():
+    # Usamos la conexión a Supabase
+    async with AsyncConnectionPool(conninfo=DB_URI, max_size=20, kwargs=connection_kwargs) as pool:
+        async with pool.connection() as conn:
+            checkpointer = AsyncPostgresSaver(conn)
+            # La primera vez, esto crea las tablas necesarias en Supabase
+            await checkpointer.setup() 
+            yield checkpointer
 
 app = FastAPI(title="Agente ReAct API")
 
@@ -38,7 +59,7 @@ async def chat_endpoint(request: ChatRequest):
     input_state = {"messages": [user_message]}
 
     try:
-        async with AsyncSqliteSaver.from_conn_string("database_agente.db") as memory:
+        async with get_checkpointer() as memory:
             graph = builder.compile(name="ReAct Agent", checkpointer=memory)
             final_state = await graph.ainvoke(input_state, config=config)
             
