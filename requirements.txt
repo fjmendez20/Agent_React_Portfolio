@@ -1,0 +1,12 @@
+langgraph>=1.0.0
+langchain>=0.2.14
+langchain-core
+langchain-google-genai>=2.0.0
+langchain-fireworks>=0.1.7
+langchain-tavily>=0.1
+fastapi
+uvicorn
+python-dotenv>=1.0.1
+langgraph-checkpoint-sqlite
+langgraph-cli>=0.4.10
+aiosqlite

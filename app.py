@@ -1,0 +1,71 @@
+import os
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+#from typing import List, Optional
+from src.react_agent.graph import builder
+from langchain_core.messages import HumanMessage
+from src.react_agent.context import Context
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
+load_dotenv()
+
+app = FastAPI(title="Agente ReAct API")
+
+class ChatRequest(BaseModel):
+    message: str 
+    session_id: str 
+
+class ChatResponse(BaseModel):
+    response: str
+    session_id: str
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    user_message = HumanMessage(content=request.message)
+    defaults = Context()
+
+
+    config = {
+            "configurable": {
+                "thread_id": request.session_id,
+                "model": defaults.model,
+                "system_prompt": defaults.system_prompt,
+                "max_search_results": defaults.max_search_results
+            }
+        }
+    
+    input_state = {"messages": [user_message]}
+
+    try:
+        async with AsyncSqliteSaver.from_conn_string("database_agente.db") as memory:
+            graph = builder.compile(name="ReAct Agent", checkpointer=memory)
+            final_state = await graph.ainvoke(input_state, config=config)
+            
+            # 1. Obtenemos el contenido crudo del último mensaje
+            raw_content = final_state["messages"][-1].content
+            
+            # 2. Manejamos los diferentes formatos que puede devolver el LLM
+            if isinstance(raw_content, str):
+                # Si ya es texto, lo dejamos igual
+                ai_response = raw_content
+            elif isinstance(raw_content, list):
+                # Si es una lista, extraemos el valor "text" de cada bloque y lo unimos
+                ai_response = "\n".join(
+                    block.get("text", "") for block in raw_content if isinstance(block, dict) and "text" in block
+                )
+            else:
+                # Por si acaso llega en algún otro formato raro
+                ai_response = str(raw_content)
+            
+            return ChatResponse(
+                response=ai_response,
+                session_id=request.session_id
+            )
+            
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error en el grafo: {str(e)}")
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
