@@ -19,7 +19,7 @@ DB_URI = os.getenv("DATABASE_URL")
 # 2. Creamos un pool de conexiones (esto es más profesional)
 connection_kwargs = {
     "autocommit": True,
-    "prepare_threshold": 0,
+    "prepare_threshold": None,
 }
 
 @asynccontextmanager
