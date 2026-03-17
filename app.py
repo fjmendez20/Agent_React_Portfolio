@@ -1,9 +1,10 @@
 import os
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Security, Depends
+from fastapi.security.api_key import APIKeyHeader
+from starlette.status import HTTP_403_FORBIDDEN
 from pydantic import BaseModel
-#from typing import List, Optional
 from src.react_agent.graph import builder
 from langchain_core.messages import HumanMessage
 from src.react_agent.context import Context
@@ -32,7 +33,20 @@ async def get_checkpointer():
             await checkpointer.setup() 
             yield checkpointer
 
-app = FastAPI(title="Agente ReAct API")
+app = FastAPI()
+
+# Definimos cómo se llama el encabezado que buscaremos
+API_KEY_NAME = "X-API-KEY"
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+# Función para validar la llave
+async def get_api_key(api_key_header: str = Security(api_key_header)):
+    if api_key_header == os.getenv("CHAT_API_KEY"):
+        return api_key_header
+    else:
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="No se pudo validar la API Key"
+        )
 
 class ChatRequest(BaseModel):
     message: str 
@@ -43,7 +57,11 @@ class ChatResponse(BaseModel):
     session_id: str
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(request: ChatRequest):
+async def chat_endpoint(
+    request: ChatRequest, 
+    api_key: str = Depends(get_api_key) 
+):
+
     user_message = HumanMessage(content=request.message)
     defaults = Context()
 
