@@ -78,30 +78,39 @@ async def chat_endpoint(
     input_state = {"messages": [user_message]}
 
     try:
-        async with get_checkpointer() as memory:
-            graph = builder.compile(name="ReAct Agent", checkpointer=memory)
-            final_state = await graph.ainvoke(input_state, config=config)
-            
-            # 1. Obtenemos el contenido crudo del último mensaje
-            raw_content = final_state["messages"][-1].content
-            
-            # 2. Manejamos los diferentes formatos que puede devolver el LLM
-            if isinstance(raw_content, str):
-                # Si ya es texto, lo dejamos igual
-                ai_response = raw_content
-            elif isinstance(raw_content, list):
-                # Si es una lista, extraemos el valor "text" de cada bloque y lo unimos
-                ai_response = "\n".join(
-                    block.get("text", "") for block in raw_content if isinstance(block, dict) and "text" in block
+            async with get_checkpointer() as memory:
+                graph = builder.compile(name="ReAct Agent", checkpointer=memory)
+                final_state = await graph.ainvoke(input_state, config=config)
+                
+                # --- LÓGICA DE EXTRACCIÓN MEJORADA ---
+                ai_response = ""
+                # Recorremos los mensajes de atrás hacia adelante
+                for m in reversed(final_state["messages"]):
+                    # Buscamos un mensaje de AI que tenga contenido y NO sea una simple llamada a tool
+                    if m.type == "ai" and m.content:
+                        raw_content = m.content
+                        
+                        # Manejamos si el contenido viene como string o como lista de bloques (formato Gemini/Claude)
+                        if isinstance(raw_content, str):
+                            ai_response = raw_content
+                        elif isinstance(raw_content, list):
+                            ai_response = "\n".join(
+                                block.get("text", "") for block in raw_content 
+                                if isinstance(block, dict) and "text" in block
+                            )
+                        
+                        # Si encontramos texto válido, dejamos de buscar
+                        if ai_response.strip():
+                            break
+
+                # Si después de buscar no hay nada, damos un mensaje de respaldo
+                if not ai_response:
+                    ai_response = "Lo siento, tuve un problema procesando esa consulta. ¿Podrías repetirla?"
+
+                return ChatResponse(
+                    response=ai_response,
+                    session_id=request.session_id
                 )
-            else:
-                # Por si acaso llega en algún otro formato raro
-                ai_response = str(raw_content)
-            
-            return ChatResponse(
-                response=ai_response,
-                session_id=request.session_id
-            )
             
     except Exception as e:
         print(f"Error: {e}")
