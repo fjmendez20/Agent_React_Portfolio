@@ -1,5 +1,6 @@
 import os
 import uvicorn
+import re
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Security, Depends
 from fastapi.security.api_key import APIKeyHeader
@@ -82,15 +83,12 @@ async def chat_endpoint(
                 graph = builder.compile(name="ReAct Agent", checkpointer=memory)
                 final_state = await graph.ainvoke(input_state, config=config)
                 
-                # --- LÓGICA DE EXTRACCIÓN MEJORADA ---
+                # --- LÓGICA DE EXTRACCIÓN MEJORADA CON LIMPIEZA ---
                 ai_response = ""
-                # Recorremos los mensajes de atrás hacia adelante
                 for m in reversed(final_state["messages"]):
-                    # Buscamos un mensaje de AI que tenga contenido y NO sea una simple llamada a tool
                     if m.type == "ai" and m.content:
                         raw_content = m.content
                         
-                        # Manejamos si el contenido viene como string o como lista de bloques (formato Gemini/Claude)
                         if isinstance(raw_content, str):
                             ai_response = raw_content
                         elif isinstance(raw_content, list):
@@ -99,7 +97,17 @@ async def chat_endpoint(
                                 if isinstance(block, dict) and "text" in block
                             )
                         
-                        # Si encontramos texto válido, dejamos de buscar
+                        # --- NUEVO BLOQUE DE LIMPIEZA ---
+                        # 1. Elimina bloques completos de <tool_code>...</tool_code>
+                        ai_response = re.sub(r'<tool_code.*?>.*?</tool_code>', '', ai_response, flags=re.DOTALL)
+                        # 2. Elimina etiquetas de apertura si quedaron huérfanas
+                        ai_response = re.sub(r'<tool_code.*?>', '', ai_response, flags=re.DOTALL)
+                        # 3. Elimina llamadas a print de la API
+                        ai_response = re.sub(r'print\(default_api\..*?\)', '', ai_response)
+                        # 4. Elimina etiquetas de cierre y limpia espacios
+                        ai_response = ai_response.replace('</tool_code>', '').strip()
+                        # --------------------------------
+
                         if ai_response.strip():
                             break
 
