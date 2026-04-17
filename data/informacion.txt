@@ -1,17 +1,19 @@
 [PERFIL]
-Fabian Mendez es un Especialista Arquitecto de Soluciones en IA y Chatbots con más de 5 años de experiencia. Se especializa en IA Conversacional, transformando la experiencia del cliente mediante la implementación de Modelos de Lenguaje Extensos (LLMs) y arquitecturas RAG (Generación Aumentada por Recuperación). Su stack tecnológico principal incluye un dominio avanzado de Python (para ajuste fino de LLMs y NLP) y JavaScript (especialmente para lógica compleja en plataformas como Kore.ai). Posee conocimientos profundos en frameworks de orquestación como LangGraph, diseño de arquitecturas escalables y la integración de inteligencia artificial generativa en infraestructuras empresariales y sistemas legacy.
+Fabian Mendez es un Especialista Arquitecto de Soluciones en IA y Chatbots con más de 5 años de experiencia. Se especializa en IA Conversacional, transformando la experiencia del cliente mediante la implementación de Modelos de Lenguaje Extensos (LLMs) y arquitecturas RAG (Generación Aumentada por Recuperación). Su stack tecnológico principal incluye un dominio avanzado de Python (desarrollo de APIs con FastAPI, scripts de evaluación y NLP) y JavaScript (especialmente para lógica compleja en plataformas como Kore.ai). Posee conocimientos profundos en frameworks de orquestación como LangGraph para agentes autónomos, desarrollo de flujos automatizados en n8n y el diseño de arquitecturas escalables integrando inteligencia artificial generativa en infraestructuras empresariales y sistemas legacy.
 
 [EXPERIENCIA]
-Como Arquitecto de Soluciones en Sybven (2023-Presente), Fabian lidera el diseño de arquitecturas RAG escalables y ha implementado marcos de evaluación avanzada utilizando el framework RAGAS, optimizando métricas críticas como Faithfulness (fidelidad), Answer Relevance y Context Precision. 
+Como Arquitecto de Soluciones en Sybven (2023-Presente), Fabian lidera el diseño de arquitecturas RAG escalables y ha implementado marcos de evaluación avanzada utilizando scripts en Python con el framework RAGAS, optimizando métricas críticas como Faithfulness (fidelidad), Answer Relevance y Context Precision. 
 
 Sus hitos técnicos clave incluyen:
-1. Integraciones y Middleware: Creación de ecosistemas conversacionales integrando chatbots con Salesforce, Zendesk, Genesys y WhatsApp Business API mediante el desarrollo de middleware robusto y consumo de APIs RESTful.
-2. Voicebots y Telefonía: Especialista en canales de voz, utilizando protocolos SIP para integración de telefonía IP, optimizando sistemas ASR (Reconocimiento de Habla) y TTS (Síntesis de Voz) para interacciones fluidas.
-3. Impacto Regional: 
+1. Integraciones, Middleware y Webhooks: Creación de ecosistemas conversacionales integrando chatbots con Salesforce, Zendesk, Genesys y WhatsApp Business API mediante el desarrollo de middleware robusto, uso de webhooks para múltiples plataformas y consumo de APIs RESTful.
+2. Orquestación y Automatización: Experto en el desarrollo de agentes inteligentes utilizando LangGraph y en la creación de flujos de trabajo automatizados en n8n para optimizar procesos operativos.
+3. Ecosistema de Mensajería: Experiencia técnica con BSPs (Business Solution Providers) como Positus e Infobip para la gestión y despliegue de soluciones sobre la API de WhatsApp Business.
+4. Voicebots y Telefonía: Especialista en canales de voz, utilizando protocolos SIP para integración de telefonía IP, optimizando sistemas ASR (Reconocimiento de Habla) y TTS (Síntesis de Voz) para interacciones fluidas.
+5. Impacto Regional: 
    - En Ecuador (Sector Seguros): Logró una reducción del 30% en tickets mediante el fine-tuning de LLMs. 
    - En Panamá y Rep. Dominicana (Sector Banca): Desplegó asistentes de voz y chatbots con integraciones complejas.
    - En Paraguay: Consultoría estratégica para arquitecturas RAG corporativas.
-4. Trayectoria previa: Experiencia como desarrollador web (Koiosoft) con PHP, Drupal 8, Symfony3 y gestión de bases de datos MySQL/PostgreSQL bajo metodologías ágiles (Scrum).
+6. Trayectoria previa: Experiencia como desarrollador web (Koiosoft) con PHP, Drupal 8, Symfony3 y gestión de bases de datos MySQL/PostgreSQL bajo metodologías ágiles (Scrum).
 
 [CONTACTO]
 Fabian está disponible para consultorías de IA, liderazgo de proyectos técnicos y roles de AI Management.
