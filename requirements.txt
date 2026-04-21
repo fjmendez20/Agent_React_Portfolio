@@ -10,3 +10,4 @@ gunicorn
 langgraph-checkpoint-postgres 
 psycopg[binary,pool]
 langchain-community
+requests
