@@ -38,7 +38,14 @@ def capturar_lead(nombre: str, email: str, descripcion: str) -> str:
     Usa esta herramienta ÚNICAMENTE cuando el usuario haya confirmado su interés en trabajar con Fabian 
     y te haya proporcionado su nombre, email y descripción del proyecto.
     """
-
+    # --- BLOQUE DE LOG ---
+    print("\n" + "="*40)
+    print(f"🚀 EJECUTANDO TOOL: capturar_lead")
+    print(f"👤 Nombre: {nombre}")
+    print(f"📧 Email: {email}")
+    print(f"📝 Descripción: {descripcion}")
+    print("="*40 + "\n")
+    # ----------------------
     api_url = os.getenv("LEAD_API_URL")
 
     html_content = f"""

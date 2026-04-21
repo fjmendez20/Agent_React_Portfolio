@@ -82,7 +82,14 @@ async def chat_endpoint(
             async with get_checkpointer() as memory:
                 graph = builder.compile(name="ReAct Agent", checkpointer=memory)
                 final_state = await graph.ainvoke(input_state, config=config)
-                
+                # --- NUEVO: LOG DE DETECCIÓN DE TOOLS ---
+                for m in final_state["messages"]:
+                    # Si el mensaje es de la IA y contiene llamadas a herramientas
+                    if m.type == "ai" and hasattr(m, "tool_calls") and m.tool_calls:
+                        for tool_call in m.tool_calls:
+                            print(f"🎯 EL AGENTE LLAMÓ A: {tool_call['name']}")
+                            print(f"📦 ARGUMENTOS: {tool_call['args']}")
+                # ----------------------------------------
                 # --- LÓGICA DE EXTRACCIÓN MEJORADA CON LIMPIEZA ---
                 ai_response = ""
                 for m in reversed(final_state["messages"]):
