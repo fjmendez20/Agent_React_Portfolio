@@ -149,4 +149,4 @@ async def informacion_fabian(tema: str) -> str:
 
 
 # IMPORTANTE: La lista de herramientas actualizada
-TOOLS = [informacion_fabian]
+TOOLS = [informacion_fabian, capturar_lead]
