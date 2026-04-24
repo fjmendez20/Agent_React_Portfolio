@@ -1,6 +1,7 @@
 import os
 import uvicorn
 import re
+import time  # <-- Importante para medir la latencia
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Security, Depends
 from fastapi.security.api_key import APIKeyHeader
@@ -15,32 +16,44 @@ from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 load_dotenv()
 
-# 1. Obtenemos la URL de Supabase desde las variables de entorno
 DB_URI = os.getenv("DATABASE_URL")
 
-# 2. Creamos un pool de conexiones (esto es más profesional)
 connection_kwargs = {
     "autocommit": True,
     "prepare_threshold": None,
 }
 
+# --- OPTIMIZACIÓN: Variables globales para la base de datos ---
+db_pool = None
+checkpointer = None
+
+# Lifespan: Esto se ejecuta UNA SOLA VEZ al iniciar o apagar el servidor de FastAPI
 @asynccontextmanager
-async def get_checkpointer():
-    # Usamos la conexión a Supabase
-    async with AsyncConnectionPool(conninfo=DB_URI, max_size=20, kwargs=connection_kwargs) as pool:
-        async with pool.connection() as conn:
-            checkpointer = AsyncPostgresSaver(conn)
-            # La primera vez, esto crea las tablas necesarias en Supabase
-            await checkpointer.setup() 
-            yield checkpointer
+async def lifespan(app: FastAPI):
+    global db_pool, checkpointer
+    print("🚀 Iniciando servidor: Configurando pool de conexiones a la base de datos...")
+    
+    # Abrimos el pool de conexiones
+    db_pool = AsyncConnectionPool(conninfo=DB_URI, max_size=20, kwargs=connection_kwargs)
+    
+    # Inicializamos el checkpointer inyectando el pool completo (mejor para concurrencia)
+    checkpointer = AsyncPostgresSaver(db_pool)
+    
+    # Hacemos el setup UNA SOLA VEZ
+    await checkpointer.setup()
+    print("✅ Base de datos conectada y tablas de memoria verificadas.")
+    
+    yield  # Aquí es donde la aplicación se queda corriendo
+    
+    print("🛑 Apagando servidor: Cerrando conexiones a la base de datos...")
+    await db_pool.close()
 
-app = FastAPI()
+# Iniciamos FastAPI indicándole que use el ciclo de vida (lifespan) que acabamos de crear
+app = FastAPI(lifespan=lifespan)
 
-# Definimos cómo se llama el encabezado que buscaremos
 API_KEY_NAME = "X-API-KEY"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
-# Función para validar la llave
 async def get_api_key(api_key_header: str = Security(api_key_header)):
     if api_key_header == os.getenv("CHAT_API_KEY"):
         return api_key_header
@@ -62,75 +75,76 @@ async def chat_endpoint(
     request: ChatRequest, 
     api_key: str = Depends(get_api_key) 
 ):
+    # Iniciamos el cronómetro
+    start_time = time.time()
 
     user_message = HumanMessage(content=request.message)
     defaults = Context()
 
-
     config = {
-            "configurable": {
-                "thread_id": request.session_id,
-                "model": defaults.model,
-                "system_prompt": defaults.system_prompt,
-                "max_search_results": defaults.max_search_results
-            }
+        "configurable": {
+            "thread_id": request.session_id,
+            "model": defaults.model,
+            "system_prompt": defaults.system_prompt,
+            "max_search_results": defaults.max_search_results
         }
+    }
     
     input_state = {"messages": [user_message]}
 
     try:
-            async with get_checkpointer() as memory:
-                graph = builder.compile(name="ReAct Agent", checkpointer=memory)
-                final_state = await graph.ainvoke(input_state, config=config)
-                # --- NUEVO: LOG DE DETECCIÓN DE TOOLS ---
-                for m in final_state["messages"]:
-                    # Si el mensaje es de la IA y contiene llamadas a herramientas
-                    if m.type == "ai" and hasattr(m, "tool_calls") and m.tool_calls:
-                        for tool_call in m.tool_calls:
-                            print(f"🎯 EL AGENTE LLAMÓ A: {tool_call['name']}")
-                            print(f"📦 ARGUMENTOS: {tool_call['args']}")
-                # ----------------------------------------
-                # --- LÓGICA DE EXTRACCIÓN MEJORADA CON LIMPIEZA ---
-                ai_response = ""
-                for m in reversed(final_state["messages"]):
-                    if m.type == "ai" and m.content:
-                        raw_content = m.content
-                        
-                        if isinstance(raw_content, str):
-                            ai_response = raw_content
-                        elif isinstance(raw_content, list):
-                            ai_response = "\n".join(
-                                block.get("text", "") for block in raw_content 
-                                if isinstance(block, dict) and "text" in block
-                            )
-                        
-                        # --- NUEVO BLOQUE DE LIMPIEZA ---
-                        # 1. Elimina bloques completos de <tool_code>...</tool_code>
-                        ai_response = re.sub(r'<tool_code.*?>.*?</tool_code>', '', ai_response, flags=re.DOTALL)
-                        # 2. Elimina etiquetas de apertura si quedaron huérfanas
-                        ai_response = re.sub(r'<tool_code.*?>', '', ai_response, flags=re.DOTALL)
-                        # 3. Elimina llamadas a print de la API
-                        ai_response = re.sub(r'print\(default_api\..*?\)', '', ai_response)
-                        # 4. Elimina etiquetas de cierre y limpia espacios
-                        ai_response = ai_response.replace('</tool_code>', '').strip()
-                        # --------------------------------
+        # OPTIMIZACIÓN: Ya no hacemos la conexión aquí. Usamos el 'checkpointer' global.
+        graph = builder.compile(name="ReAct Agent", checkpointer=checkpointer)
+        final_state = await graph.ainvoke(input_state, config=config)
+        
+        # --- LOG DE DETECCIÓN DE TOOLS ---
+        for m in final_state["messages"]:
+            if m.type == "ai" and hasattr(m, "tool_calls") and m.tool_calls:
+                for tool_call in m.tool_calls:
+                    print(f"🎯 EL AGENTE LLAMÓ A: {tool_call['name']}")
+                    print(f"📦 ARGUMENTOS: {tool_call['args']}")
+        # ----------------------------------------
+        
+        # --- LÓGICA DE EXTRACCIÓN Y LIMPIEZA ---
+        ai_response = ""
+        for m in reversed(final_state["messages"]):
+            if m.type == "ai" and m.content:
+                raw_content = m.content
+                
+                if isinstance(raw_content, str):
+                    ai_response = raw_content
+                elif isinstance(raw_content, list):
+                    ai_response = "\n".join(
+                        block.get("text", "") for block in raw_content 
+                        if isinstance(block, dict) and "text" in block
+                    )
+                
+                # --- LIMPIEZA (Regex) ---
+                ai_response = re.sub(r'<tool_code.*?>.*?</tool_code>', '', ai_response, flags=re.DOTALL)
+                ai_response = re.sub(r'<tool_code.*?>', '', ai_response, flags=re.DOTALL)
+                ai_response = re.sub(r'print\(default_api\..*?\)', '', ai_response)
+                ai_response = ai_response.replace('</tool_code>', '').strip()
+                # --------------------------------
 
-                        if ai_response.strip():
-                            break
+                if ai_response.strip():
+                    break
 
-                # Si después de buscar no hay nada, damos un mensaje de respaldo
-                if not ai_response:
-                    ai_response = "Lo siento, tuve un problema procesando esa consulta. ¿Podrías repetirla?"
+        if not ai_response:
+            ai_response = "Lo siento, tuve un problema procesando esa consulta. ¿Podrías repetirla?"
 
-                return ChatResponse(
-                    response=ai_response,
-                    session_id=request.session_id
-                )
+        # Paramos el cronómetro y mostramos el tiempo
+        end_time = time.time()
+        print(f"⏱️ TIEMPO TOTAL DE RESPUESTA: {end_time - start_time:.2f} segundos")
+
+        return ChatResponse(
+            response=ai_response,
+            session_id=request.session_id
+        )
             
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=f"Error en el grafo: {str(e)}")
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
