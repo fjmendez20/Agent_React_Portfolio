@@ -1,7 +1,7 @@
 import os
 import uvicorn
 import re
-import time  # <-- Importante para medir la latencia
+import time  
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Security, Depends
 from fastapi.security.api_key import APIKeyHeader
@@ -33,19 +33,14 @@ async def lifespan(app: FastAPI):
     global db_pool, checkpointer
     print("🚀 Iniciando servidor: Configurando pool de conexiones a la base de datos...")
     
-    # Abrimos el pool de conexiones
-    db_pool = AsyncConnectionPool(conninfo=DB_URI, max_size=20, kwargs=connection_kwargs)
+    db_pool = AsyncConnectionPool(conninfo=DB_URI, max_size=20, kwargs=connection_kwargs, open=False) # Agregamos open=False
     
-    # Inicializamos el checkpointer inyectando el pool completo (mejor para concurrencia)
+    # Lo abrimos explícitamente (esto quita el Warning)
+    await db_pool.open() 
+    
     checkpointer = AsyncPostgresSaver(db_pool)
-    
-    # Hacemos el setup UNA SOLA VEZ
     await checkpointer.setup()
-    print("✅ Base de datos conectada y tablas de memoria verificadas.")
-    
-    yield  # Aquí es donde la aplicación se queda corriendo
-    
-    print("🛑 Apagando servidor: Cerrando conexiones a la base de datos...")
+    yield
     await db_pool.close()
 
 # Iniciamos FastAPI indicándole que use el ciclo de vida (lifespan) que acabamos de crear
@@ -144,6 +139,12 @@ async def chat_endpoint(
     except Exception as e:
         print(f"Error: {e}")
         raise HTTPException(status_code=500, detail=f"Error en el grafo: {str(e)}")
+
+
+@app.get("/")
+async def root():
+    return {"status": "online", "message": "Agente de Fabian operando"}
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
