@@ -117,35 +117,31 @@ def capturar_lead(nombre: str, email: str, descripcion: str) -> str:
 
 @tool
 async def informacion_fabian(tema: str) -> str:
-    """Consulta información específica sobre Fabian Mendez. 
-    Argumentos válidos para 'tema': 
-    - 'PERFIL': Resumen profesional y especialidades.
-    - 'EXPERIENCIA': Proyectos, logros técnicos (RAG, Voicebots, Middleware) e impacto regional.
-    - 'CONTACTO': Email, LinkedIn, portafolio y redes.
+    """Consulta información sobre Fabian Mendez. 
+    Argumentos válidos: 
+    - 'PERFIL', 'EXPERIENCIA', 'CONTACTO' o 'TODO' (para obtener toda la información de una vez).
     """
-    # Ruta calculada desde src/react_agent/tools.py hacia la raíz/data/informacion.txt
     path = Path(__file__).parent.parent.parent / "data" / "informacion.txt"
     
     try:
-        # Leemos el archivo completo
         contenido = path.read_text(encoding="utf-8")
         
-        # Normalizamos el tema a buscar
-        tag_inicio = f"[{tema.upper().strip()}]"
+        # --- NUEVA LÓGICA PARA 'TODO' ---
+        if tema.upper().strip() == "TODO":
+            return f"Información completa de Fabian:\n\n{contenido}"
         
+        # Lógica actual para secciones específicas
+        tag_inicio = f"[{tema.upper().strip()}]"
         if tag_inicio in contenido:
-            # Extraemos la sección:
-            # 1. Dividimos en el tag de inicio y tomamos lo que sigue
-            # 2. Volvemos a dividir en el siguiente '[' (donde empieza otra sección) y tomamos lo anterior
             resultado = contenido.split(tag_inicio)[1].split("[")[0].strip()
             return f"Información sobre {tema.upper()}:\n\n{resultado}"
         else:
-            return f"No encontré la sección '{tema}'. Por favor, intenta con: PERFIL, EXPERIENCIA o CONTACTO."
+            return f"No encontré la sección '{tema}'. Usa: PERFIL, EXPERIENCIA, CONTACTO o TODO."
             
     except FileNotFoundError:
-        return "Error: El archivo de conocimiento 'informacion.txt' no fue encontrado en la carpeta data/."
+        return "Error: Archivo 'informacion.txt' no encontrado."
     except Exception as e:
-        return f"Error al procesar la información: {str(e)}"
+        return f"Error: {str(e)}"
 
 
 # IMPORTANTE: La lista de herramientas actualizada
