@@ -17,11 +17,21 @@ def get_message_text(msg: BaseMessage) -> str:
         return "".join(txts).strip()
 
 
+_model_cache: dict = {}
+
+
 def load_chat_model(fully_specified_name: str) -> BaseChatModel:
     """Carga un modelo de chat a partir de un nombre completamente especificado.
 
     Args:
         fully_specified_name (str): Cadena en el formato 'proveedor/modelo'.
+
+    El modelo se cachea en memoria: inicializar el cliente del LLM en cada
+    paso del grafo era una de las principales fuentes de latencia.
     """
     provider, model = fully_specified_name.split("/", maxsplit=1)
-    return init_chat_model(model, model_provider=provider)
+    if fully_specified_name not in _model_cache:
+        _model_cache[fully_specified_name] = init_chat_model(
+            model, model_provider=provider
+        )
+    return _model_cache[fully_specified_name]
