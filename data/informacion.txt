@@ -1,24 +1,34 @@
-[PERFIL]
-Fabian Mendez es un Especialista Arquitecto de Soluciones en IA y Chatbots con más de 5 años de experiencia. Se especializa en IA Conversacional, transformando la experiencia del cliente mediante la implementación de Modelos de Lenguaje Extensos (LLMs) y arquitecturas RAG (Generación Aumentada por Recuperación). Su stack tecnológico principal incluye un dominio avanzado de Python (desarrollo de APIs con FastAPI, scripts de evaluación y NLP) y JavaScript (especialmente para lógica compleja en plataformas como Kore.ai). Posee conocimientos profundos en frameworks de orquestación como LangGraph para agentes autónomos, desarrollo de flujos automatizados en n8n y el diseño de arquitecturas escalables integrando inteligencia artificial generativa en infraestructuras empresariales y sistemas legacy.
+# Fabian Mendez - AI Developer & Solutions Architect
 
-[EXPERIENCIA]
-Como Arquitecto de Soluciones en Sybven (2023-Presente), Fabian lidera el diseño de arquitecturas RAG escalables y ha implementado marcos de evaluación avanzada utilizando scripts en Python con el framework RAGAS, optimizando métricas críticas como Faithfulness (fidelidad), Answer Relevance y Context Precision. 
+## PERFIL
 
-Sus hitos técnicos clave incluyen:
-1. Integraciones, Middleware y Webhooks: Creación de ecosistemas conversacionales integrando chatbots con Salesforce, Zendesk, Genesys y WhatsApp Business API mediante el desarrollo de middleware robusto, uso de webhooks para múltiples plataformas y consumo de APIs RESTful.
-2. Orquestación y Automatización: Experto en el desarrollo de agentes inteligentes utilizando LangGraph y en la creación de flujos de trabajo automatizados en n8n para optimizar procesos operativos.
-3. Ecosistema de Mensajería: Experiencia técnica con BSPs (Business Solution Providers) como Positus e Infobip para la gestión y despliegue de soluciones sobre la API de WhatsApp Business.
-4. Voicebots y Telefonía: Especialista en canales de voz, utilizando protocolos SIP para integración de telefonía IP, optimizando sistemas ASR (Reconocimiento de Habla) y TTS (Síntesis de Voz) para interacciones fluidas.
-5. Impacto Regional: 
-   - En Ecuador (Sector Seguros): Logró una reducción del 30% en tickets mediante el fine-tuning de LLMs. 
-   - En Panamá y Rep. Dominicana (Sector Banca): Desplegó asistentes de voz y chatbots con integraciones complejas.
-   - En Paraguay: Consultoría estratégica para arquitecturas RAG corporativas.
-6. Trayectoria previa: Experiencia como desarrollador web (Koiosoft) con PHP, Drupal 8, Symfony3 y gestión de bases de datos MySQL/PostgreSQL bajo metodologías ágiles (Scrum).
+Fabian Mendez es un Arquitecto de Soluciones en IA y Desarrollador de Software con más de 6 años de experiencia. Se especializa en IA Conversacional y automatización de procesos, diseñando e implementando arquitecturas agénticas y multi-agente avanzadas con LangChain y LangGraph, así como soluciones RAG con evaluación continua mediante el framework RAGAS para maximizar la precisión de los datos y minimizar alucinaciones. Su stack tecnológico principal combina plataformas low-code como n8n con desarrollo pro-code en Python (creación de servicios backend y APIs de alto rendimiento con FastAPI) y JavaScript (desarrollo web y lógica compleja en plataformas como Kore.ai). Posee profundos conocimientos en el ajuste y fine-tuning de modelos de lenguaje (locales y en la nube), prompting avanzado, guardrails de seguridad empresarial, frontend con Astro, bases de datos (PostgreSQL, MySQL, Chroma DB) y despliegues robustos con Docker y Git/GitHub.
 
-[CONTACTO]
+---
+
+## EXPERIENCIA
+
+Como **Arquitecto de Soluciones en IA en Sybven (2023 - Presente)**, Fabian lidera la creación de servicios backend, microservicios y frontends modernos, el desarrollo de sistemas autónomos y el diseño de flujos de automatización que combinan herramientas low-code con lógica pro-code. Asimismo, implementa métricas automatizadas de rendimiento y evaluación de RAG/agentes con RAGAS para el ajuste de hiperparámetros y optimización de la precisión de información.
+
+### Hitos técnicos clave:
+
+1. **Integraciones, Middleware y Omnicanalidad**: Conexión e integración de sistemas mediante webhooks y APIs RESTful hacia plataformas como Salesforce, Zendesk y Genesys, desplegando ecosistemas conversacionales sobre WhatsApp Business API, Telegram, Facebook, correo electrónico y canales de voz.
+2. **Orquestación y Automatización Agéntica**: Desarrollo de asistentes virtuales complejos y sistemas multi-agente utilizando LangChain y LangGraph, complementados con la automatización de flujos de trabajo en n8n para optimizar procesos operativos y de IA.
+3. **Fine-Tuning y Seguridad en LLMs**: Ajuste y despliegue de modelos de lenguaje en Python, aplicando técnicas avanzadas de prompting y guardrails de seguridad adaptados a entornos empresariales.
+4. **DevOps y Prácticas de Desarrollo**: Uso de contenedorización con Docker y control de versiones con Git/GitHub para garantizar ambientes de pruebas y producción escalables, probados y robustos.
+5. **Impacto Internacional en Banca y Seguros**: Liderazgo y dirección técnica de proyectos tecnológicos en mercados internacionales (Panamá, República Dominicana, Ecuador y Paraguay), alineando las soluciones técnicas con la eficiencia operacional del negocio.
+6. **Trayectoria Previa**: 
+   - **Sybven (Desarrollador de Software Digital Avanzado, 2020 - 2023)**: Desarrollo de chatbots avanzados en Kore.ai con JavaScript y NLP/NLU, integraciones de sistemas empresariales (Salesforce, Zendesk, Genesys) mediante API REST y trabajo bajo metodologías ágiles (Scrum).
+   - **Koiosoft (Desarrollador Web, 2019 - 2020)**: Desarrollo de aplicaciones web bajo metodología FDD, gestión de bases de datos MySQL/PostgreSQL e implementación de soluciones en Drupal 8 y Symfony3 con PHP.
+
+---
+
+## CONTACTO
+
 Fabian está disponible para consultorías de IA, liderazgo de proyectos técnicos y roles de AI Management.
-- LinkedIn: linkedin.com/in/fabianjosemendez/
-- Correo electrónico: fjmendez20@gmail.com
-- WhatsApp / Teléfono: +584127344016
-- Portafolio Web: portafolio-ai.vercel.app/
-- Ubicación: Venezuela (Disponibilidad para proyectos regionales).
+
+* **LinkedIn**: [linkedin.com/in/fabianjosemendez](https://linkedin.com/in/fabianjosemendez/)
+* **Correo electrónico**: [fjmendez20@gmail.com](mailto:fjmendez20@gmail.com)
+* **WhatsApp / Teléfono**: +584127344016
+* **Portafolio Web**: [portafolio-ai.vercel.app](https://portafolio-ai.vercel.app/)
+* **Ubicación**: Los Teques, Miranda, Venezuela (Disponibilidad para proyectos regionales)
