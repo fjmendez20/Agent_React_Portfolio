@@ -145,4 +145,7 @@ async def informacion_fabian(tema: str) -> str:
 
 
 # IMPORTANTE: La lista de herramientas actualizada
-TOOLS = [informacion_fabian, capturar_lead]
+# `informacion_fabian` se mantiene en el archivo pero ya NO se expone al modelo:
+# la base de conocimiento va inline en el system prompt (ver prompts.py), lo que
+# ahorra una llamada completa al modelo por cada mensaje.
+TOOLS = [capturar_lead]

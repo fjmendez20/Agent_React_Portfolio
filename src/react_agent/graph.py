@@ -14,18 +14,31 @@ from langgraph.runtime import Runtime
 from src.react_agent.context import Context
 from src.react_agent.state import InputState, State
 from src.react_agent.tools import TOOLS
-from src.react_agent.utils import load_chat_model
+from src.react_agent.utils import load_chat_models
 from langchain_core.runnables import RunnableConfig
 #from langgraph.checkpoint.memory import MemorySaver 
 
 
 
+def build_model(context: Context):
+    """Construye el modelo con sus herramientas y una cadena de modelos de respaldo.
+
+    ``RunnableWithFallbacks`` no expone ``bind_tools``, así que las herramientas
+    se enlazan a cada modelo ANTES de encadenar los respaldos. Si el modelo
+    principal devuelve 503 o 429, LangChain prueba el siguiente de la lista.
+    """
+    models = load_chat_models(context.model, context.fallback_models)
+    primary = models[0].bind_tools(TOOLS)
+    if len(models) == 1:
+        return primary
+    return primary.with_fallbacks([m.bind_tools(TOOLS) for m in models[1:]])
+
+
 async def call_model(state: State, config: RunnableConfig) -> Dict[str, List[AIMessage]]:
     # Extraemos el contexto correctamente usando el método que creamos
     context = Context.from_runnable_config(config)
-    
-    # Ahora context.model ya no será None
-    model = load_chat_model(context.model).bind_tools(TOOLS)
+
+    model = build_model(context)
 
     system_message = context.system_prompt.format(
         system_time=datetime.now(tz=UTC).isoformat()

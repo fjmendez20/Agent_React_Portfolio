@@ -3,8 +3,9 @@
 from __future__ import annotations
 import os
 from dataclasses import dataclass, field, fields
-from typing import Annotated
+from typing import Annotated, Optional
 from . import prompts
+from . import utils
 from langchain_core.runnables import RunnableConfig
 
 
@@ -27,6 +28,14 @@ class Context:
         metadata={
             "description": "El nombre del modelo de lenguaje a usar para las interacciones principales del agente. "
             "Debe estar en la forma: proveedor/nombre-modelo."
+        },
+    )
+
+    fallback_models: str = field(
+        default=utils.DEFAULT_FALLBACK_MODELS,
+        metadata={
+            "description": "Modelos de respaldo separados por coma, en el formato proveedor/nombre-modelo. "
+            "Se usan automaticamente si el modelo principal devuelve 503 o 429."
         },
     )
 
